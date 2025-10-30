@@ -32,10 +32,12 @@ function openChat(userName) {
     chatWindow.style.display = 'flex';
     chatUserName.textContent = userName;
     
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    event.target.closest('.chat-item').classList.add('active');
+    if (event && event.target) {
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target.closest('.chat-item')?.classList.add('active');
+    }
 }
 
 // Send message
@@ -146,15 +148,23 @@ function createRoom() {
             receiveMessage(data);
         });
         
+        conn.on('open', () => {
+            console.log('Connection established with:', conn.peer);
+        });
+        
         setTimeout(() => {
             closeRoomModal();
             openChat('Anonymous User');
         }, 1500);
     });
     
-    // Handle incoming calls
     peer.on('call', (call) => {
         handleIncomingCall(call);
+    });
+    
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        alert('Connection error. Please try again.');
     });
 }
 
@@ -173,28 +183,42 @@ function joinRoom() {
     
     peer = new Peer();
     
-    peer.on('open', () => {
+    peer.on('open', (myId) => {
+        console.log('My peer ID:', myId);
+        
         connection = peer.connect(code);
         remotePeerId = code;
         
         connection.on('open', () => {
-            alert('Connected successfully! 🎉');
+            console.log('Connected to:', code);
             closeRoomModal();
             openChat('Anonymous User');
+            
+            // Send initial message to establish connection
+            setTimeout(() => {
+                connection.send('__CONNECTED__');
+            }, 500);
         });
         
         connection.on('data', (data) => {
-            receiveMessage(data);
+            if (data !== '__CONNECTED__') {
+                receiveMessage(data);
+            }
         });
         
         connection.on('error', (err) => {
-            alert('Failed to connect. Please check the room code.');
+            console.error('Connection error:', err);
+            alert('Failed to connect. Please check the room code and try again.');
         });
     });
     
-    // Handle incoming calls
     peer.on('call', (call) => {
         handleIncomingCall(call);
+    });
+    
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        alert('Connection error. Please try again.');
     });
 }
 
@@ -210,7 +234,7 @@ function copyRoomCode() {
 }
 
 function shareLink() {
-    const link = `${window.location.origin}?room=${currentRoomCode}`;
+    const link = `${window.location.origin}${window.location.pathname}?room=${currentRoomCode}`;
     navigator.clipboard.writeText(link);
     alert('Share link copied to clipboard!');
 }
@@ -394,7 +418,7 @@ function endCall() {
     if (audioContainer) audioContainer.remove();
 }
 
-// Check for room code in URL
+// Check for room code in URL and auto-open modal
 window.addEventListener('load', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const roomCode = urlParams.get('room');
