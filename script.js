@@ -1,8 +1,5 @@
-// Initialize Firebase
-const firebaseConfig = {
-    databaseURL: "https://video-calling-2097e-default-rtdb.asia-southeast1.firebasedatabase.app/"
-};
-firebase.initializeApp(firebaseConfig);
+// Firebase Init
+firebase.initializeApp({ databaseURL: 'https://video-calling-2097e-default-rtdb.asia-southeast1.firebasedatabase.app/' });
 const database = firebase.database();
 
 // UI Functions
@@ -20,11 +17,7 @@ function openChat(userName) {
     document.getElementById('chatUserName').textContent = userName;
 }
 
-document.getElementBy// Firebase Init
-firebase.initializeApp({ databaseURL: 'https://video-calling-2097e-default-rtdb.asia-southeast1.firebasedatabase.app/' });
-const database = firebase.database();
-
-Id('messageInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+document.getElementById('messageInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 document.querySelector('.profile-avatar')?.addEventListener('click', () => document.getElementById('profilePanel').classList.add('active'));
 function closeProfile() { document.getElementById('profilePanel').classList.remove('active'); }
 function showStatus() { alert('Status feature - Coming soon!'); }
